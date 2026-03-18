@@ -638,7 +638,7 @@ func (r *mutationResolver) PromoteVarsToRepo(ctx context.Context, opts PromoteVa
 
 // SaveProjectSettingsForSection is the resolver for the saveProjectSettingsForSection field.
 func (r *mutationResolver) SaveProjectSettingsForSection(ctx context.Context, projectSettings *restModel.APIProjectSettings, section ProjectSettingsSection) (*restModel.APIProjectSettings, error) {
-	projectId := utility.FromStringPtr(projectSettings.ProjectRef.Id)
+	projectId := utility.FromStringPtr(projectSettings.Id)
 	usr := mustHaveUser(ctx)
 	changes, err := data.SaveProjectSettingsForSection(ctx, projectId, projectSettings, model.ProjectPageSection(section), false, usr.Username())
 	if err != nil {
@@ -649,7 +649,7 @@ func (r *mutationResolver) SaveProjectSettingsForSection(ctx context.Context, pr
 
 // SaveRepoSettingsForSection is the resolver for the saveRepoSettingsForSection field.
 func (r *mutationResolver) SaveRepoSettingsForSection(ctx context.Context, repoSettings *restModel.APIProjectSettings, section ProjectSettingsSection) (*restModel.APIProjectSettings, error) {
-	projectId := utility.FromStringPtr(repoSettings.ProjectRef.Id)
+	projectId := utility.FromStringPtr(repoSettings.Id)
 	usr := mustHaveUser(ctx)
 	changes, err := data.SaveProjectSettingsForSection(ctx, projectId, repoSettings, model.ProjectPageSection(section), true, usr.Username())
 	if err != nil {
