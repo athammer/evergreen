@@ -4,9 +4,12 @@ import (
 	"context"
 
 	"github.com/99designs/gqlgen/graphql"
+	"github.com/evergreen-ci/evergreen"
 	"github.com/evergreen-ci/gimlet"
 	"github.com/mongodb/grip"
 	"github.com/mongodb/grip/message"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
 )
 
 // SplunkTracing is a graphql extension that adds splunk logging to graphql.
@@ -37,13 +40,18 @@ func (SplunkTracing) InterceptResponse(ctx context.Context, next graphql.Respons
 	}
 	start := graphql.Now()
 
+	agent := rc.Headers.Get(evergreen.GraphQLAgentHeader)
+	if agent != "" {
+		trace.SpanFromContext(ctx).SetAttributes(attribute.String(evergreen.GraphQLAgentOtelAttribute, agent))
+	}
+
 	defer func() {
 		usr := gimlet.GetUser(ctx)
 		end := graphql.Now()
 
 		duration := end.Sub(start)
 		redactedRequestVariables := RedactFieldsInMap(rc.Variables, redactedFields)
-		grip.Info(ctx, message.Fields{
+		fields := message.Fields{
 			"message":     "graphql.tracing",
 			"query":       rc.Operation.Name,
 			"operation":   rc.Operation.Operation,
@@ -54,7 +62,11 @@ func (SplunkTracing) InterceptResponse(ctx context.Context, next graphql.Respons
 			"end":         end,
 			"user":        usr.Username(),
 			"origin":      rc.Headers.Get("Origin"),
-		})
+		}
+		if agent != "" {
+			fields["agent"] = agent
+		}
+		grip.Info(ctx, fields)
 
 	}()
 	return next(ctx)
