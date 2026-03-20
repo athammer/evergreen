@@ -155,7 +155,7 @@ const (
 	TestSilentlyFailedStatus = "silentfail"
 	TestSkippedStatus        = "skip"
 	TestSucceededStatus      = "pass"
-	TestTimedOutStatus       = "timed_out"
+	TestTimedOutStatus       = "timeout"
 
 	BuildStarted   = "started"
 	BuildCreated   = "created"
