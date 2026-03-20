@@ -295,13 +295,14 @@ func testStatusSortRank(status string) int {
 	switch status {
 	case evergreen.TestFailedStatus, evergreen.TestSilentlyFailedStatus:
 		return 1
+	case evergreen.TestTimedOutStatus:
+		return 2
 	case evergreen.TestSkippedStatus:
 		return 3
 	case evergreen.TestSucceededStatus:
 		return 4
 	default:
-		// Unknown statuses (e.g. "timed_out") are treated as
-		// failures and sorted near the top.
+		// Unknown statuses are treated as failures and sorted near the top.
 		return 2
 	}
 }

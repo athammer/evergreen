@@ -23,9 +23,9 @@ func TestTestStatusSortRank(t *testing.T) {
 	silentFailRank := testStatusSortRank(evergreen.TestSilentlyFailedStatus)
 	assert.Equal(t, failRank, silentFailRank)
 
-	// Unknown statuses like "timed_out" should sort right after
-	// known failures but before skip/pass.
-	timedOutRank := testStatusSortRank("timed_out")
+	// Timed out statuses should sort right after known failures
+	// but before skip/pass.
+	timedOutRank := testStatusSortRank(evergreen.TestTimedOutStatus)
 	assert.Greater(t, timedOutRank, failRank)
 
 	skipRank := testStatusSortRank(evergreen.TestSkippedStatus)
@@ -38,7 +38,7 @@ func TestTestStatusSortRank(t *testing.T) {
 func TestSortTestResultsByStatus(t *testing.T) {
 	results := []testresult.TestResult{
 		{DisplayTestName: "test_pass", Status: evergreen.TestSucceededStatus},
-		{DisplayTestName: "test_timeout", Status: "timed_out"},
+		{DisplayTestName: "test_timeout", Status: evergreen.TestTimedOutStatus},
 		{DisplayTestName: "test_skip", Status: evergreen.TestSkippedStatus},
 		{DisplayTestName: "test_fail", Status: evergreen.TestFailedStatus},
 	}
@@ -51,7 +51,7 @@ func TestSortTestResultsByStatus(t *testing.T) {
 		}
 		sortTestResults(r, opts, nil)
 		assert.Equal(t, evergreen.TestFailedStatus, r[0].Status)
-		assert.Equal(t, "timed_out", r[1].Status)
+		assert.Equal(t, evergreen.TestTimedOutStatus, r[1].Status)
 		assert.Equal(t, evergreen.TestSkippedStatus, r[2].Status)
 		assert.Equal(t, evergreen.TestSucceededStatus, r[3].Status)
 	})
@@ -65,7 +65,7 @@ func TestSortTestResultsByStatus(t *testing.T) {
 		sortTestResults(r, opts, nil)
 		assert.Equal(t, evergreen.TestSucceededStatus, r[0].Status)
 		assert.Equal(t, evergreen.TestSkippedStatus, r[1].Status)
-		assert.Equal(t, "timed_out", r[2].Status)
+		assert.Equal(t, evergreen.TestTimedOutStatus, r[2].Status)
 		assert.Equal(t, evergreen.TestFailedStatus, r[3].Status)
 	})
 }
