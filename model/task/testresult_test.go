@@ -17,6 +17,59 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func TestTestStatusSortRank(t *testing.T) {
+	// Failure statuses should rank lowest (sort first in ASC).
+	failRank := testStatusSortRank(evergreen.TestFailedStatus)
+	silentFailRank := testStatusSortRank(evergreen.TestSilentlyFailedStatus)
+	assert.Equal(t, failRank, silentFailRank)
+
+	// Unknown statuses like "timed_out" should sort right after
+	// known failures but before skip/pass.
+	timedOutRank := testStatusSortRank("timed_out")
+	assert.Greater(t, timedOutRank, failRank)
+
+	skipRank := testStatusSortRank(evergreen.TestSkippedStatus)
+	assert.Greater(t, skipRank, timedOutRank)
+
+	passRank := testStatusSortRank(evergreen.TestSucceededStatus)
+	assert.Greater(t, passRank, skipRank)
+}
+
+func TestSortTestResultsByStatus(t *testing.T) {
+	results := []testresult.TestResult{
+		{DisplayTestName: "test_pass", Status: evergreen.TestSucceededStatus},
+		{DisplayTestName: "test_timeout", Status: "timed_out"},
+		{DisplayTestName: "test_skip", Status: evergreen.TestSkippedStatus},
+		{DisplayTestName: "test_fail", Status: evergreen.TestFailedStatus},
+	}
+
+	t.Run("ASC", func(t *testing.T) {
+		r := make([]testresult.TestResult, len(results))
+		copy(r, results)
+		opts := &FilterOptions{
+			Sort: []testresult.SortBy{{Key: testresult.SortByStatusKey}},
+		}
+		sortTestResults(r, opts, nil)
+		assert.Equal(t, evergreen.TestFailedStatus, r[0].Status)
+		assert.Equal(t, "timed_out", r[1].Status)
+		assert.Equal(t, evergreen.TestSkippedStatus, r[2].Status)
+		assert.Equal(t, evergreen.TestSucceededStatus, r[3].Status)
+	})
+
+	t.Run("DSC", func(t *testing.T) {
+		r := make([]testresult.TestResult, len(results))
+		copy(r, results)
+		opts := &FilterOptions{
+			Sort: []testresult.SortBy{{Key: testresult.SortByStatusKey, OrderDSC: true}},
+		}
+		sortTestResults(r, opts, nil)
+		assert.Equal(t, evergreen.TestSucceededStatus, r[0].Status)
+		assert.Equal(t, evergreen.TestSkippedStatus, r[1].Status)
+		assert.Equal(t, "timed_out", r[2].Status)
+		assert.Equal(t, evergreen.TestFailedStatus, r[3].Status)
+	})
+}
+
 func TestGetTaskTestResults(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
