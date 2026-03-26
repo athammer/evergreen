@@ -293,16 +293,14 @@ func filterTestResults(results []testresult.TestResult, opts *FilterOptions) ([]
 // lowest so they sort first in ascending order.
 func testStatusSortRank(status string) int {
 	switch status {
-	case evergreen.TestFailedStatus:
+	case evergreen.TestFailedStatus, evergreen.TestSilentlyFailedStatus:
 		return 1
 	case evergreen.TestTimedOutStatus:
 		return 2
 	case evergreen.TestSkippedStatus:
 		return 3
-	case evergreen.TestSilentlyFailedStatus:
-		return 4
 	case evergreen.TestSucceededStatus:
-		return 5
+		return 4
 	default:
 		// Unknown statuses are treated as failures and sorted near the top.
 		return 2
