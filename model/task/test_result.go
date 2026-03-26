@@ -299,8 +299,10 @@ func testStatusSortRank(status string) int {
 		return 2
 	case evergreen.TestSkippedStatus:
 		return 3
-	case evergreen.TestSilentlyFailedStatus, evergreen.TestSucceededStatus:
+	case evergreen.TestSilentlyFailedStatus:
 		return 4
+	case evergreen.TestSucceededStatus:
+		return 5
 	default:
 		// Unknown statuses are treated as failures and sorted near the top.
 		return 2
