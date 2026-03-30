@@ -40,9 +40,9 @@ func (SplunkTracing) InterceptResponse(ctx context.Context, next graphql.Respons
 	}
 	start := graphql.Now()
 
-	agent := rc.Headers.Get(evergreen.GraphQLAgentHeader)
-	if agent != "" {
-		trace.SpanFromContext(ctx).SetAttributes(attribute.String(evergreen.GraphQLAgentOtelAttribute, agent))
+	aiAgent := rc.Headers.Get(evergreen.GraphQLAIAgentHeader)
+	if aiAgent != "" {
+		trace.SpanFromContext(ctx).SetAttributes(attribute.String(evergreen.GraphQLAIAgentOtelAttribute, aiAgent))
 	}
 
 	defer func() {
@@ -63,8 +63,8 @@ func (SplunkTracing) InterceptResponse(ctx context.Context, next graphql.Respons
 			"user":        usr.Username(),
 			"origin":      rc.Headers.Get("Origin"),
 		}
-		if agent != "" {
-			fields["agent"] = agent
+		if aiAgent != "" {
+			fields["ai_agent"] = aiAgent
 		}
 		grip.Info(ctx, fields)
 
