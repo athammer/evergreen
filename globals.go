@@ -564,8 +564,8 @@ const (
 	HostStartedByOtelAttribute     = "evergreen.host.started_by"
 	HostNoExpirationOtelAttribute  = "evergreen.host.no_expiration"
 	HostInstanceTypeOtelAttribute  = "evergreen.host.instance_type"
-	AggregationNameOtelAttribute   = "db.aggregationName"
 	GraphQLAIAgentOtelAttribute    = "evergreen.graphql.ai_agent"
+	AggregationNameOtelAttribute   = "db.aggregationName"
 )
 
 const (
@@ -602,7 +602,7 @@ const (
 	SageUserHeader      = "x-authenticated-sage-user"
 	AuthorizationHeader = "Authorization"
 	EnvironmentHeader   = "X-Evergreen-Environment"
-	GraphQLAIAgentHeader  = "X-Graphql-Ai-Agent"
+	GraphQLAIAgentHeader = "X-Graphql-Ai-Agent"
 )
 
 const (
