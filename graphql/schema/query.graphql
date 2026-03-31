@@ -71,6 +71,7 @@ type Query {
   # task
   task(taskId: String! @requireProjectAccess(permission: TASKS, access: VIEW), execution: Int): Task
   taskAllExecutions(taskId: String! @requireProjectAccess(permission: TASKS, access: VIEW)): [Task!]!
+  quarantineStatus(taskId: String! @requireProjectAccess(permission: TASKS, access: VIEW), testName: String!): QuarantineStatus!
   taskTestSample(
     versionId: String! @requireProjectAccess(permission: TASKS, access: VIEW)
     taskIds: [String!]!

@@ -428,6 +428,10 @@ type PublicKeyInput struct {
 	Name string `json:"name"`
 }
 
+type QuarantineStatus struct {
+	IsQuarantined bool `json:"isQuarantined"`
+}
+
 type QuarantineTestInput struct {
 	TaskID   string `json:"taskId"`
 	TestName string `json:"testName"`
@@ -679,6 +683,15 @@ type TestFilterOptions struct {
 type TestSortOptions struct {
 	SortBy    TestSortCategory `json:"sortBy"`
 	Direction SortDirection    `json:"direction"`
+}
+
+type UnquarantineTestInput struct {
+	TaskID   string `json:"taskId"`
+	TestName string `json:"testName"`
+}
+
+type UnquarantineTestPayload struct {
+	Success bool `json:"success"`
 }
 
 type UpdateBetaFeaturesInput struct {

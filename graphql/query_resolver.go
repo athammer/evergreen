@@ -717,6 +717,24 @@ func (r *queryResolver) TaskAllExecutions(ctx context.Context, taskID string) ([
 	return allTasks, nil
 }
 
+// QuarantineStatus is the resolver for the quarantineStatus field.
+func (r *queryResolver) QuarantineStatus(ctx context.Context, taskID string, testName string) (*QuarantineStatus, error) {
+	t, err := task.FindOneId(ctx, taskID)
+	if err != nil {
+		return nil, InternalServerError.Send(ctx, fmt.Sprintf("fetching task '%s': %s", taskID, err.Error()))
+	}
+	if t == nil {
+		return nil, ResourceNotFound.Send(ctx, fmt.Sprintf("task '%s' not found", taskID))
+	}
+	isQuarantined, err := data.GetTestQuarantineStatus(ctx, t.Project, t.Requester, t.BuildVariant, t.Id, t.DisplayName, testName)
+	if err != nil {
+		return nil, InternalServerError.Send(ctx, fmt.Sprintf("checking quarantine status for test '%s': %s", testName, err.Error()))
+	}
+	return &QuarantineStatus{
+		IsQuarantined: isQuarantined,
+	}, nil
+}
+
 // TaskTestSample is the resolver for the taskTestSample field.
 func (r *queryResolver) TaskTestSample(ctx context.Context, versionID string, taskIds []string, filters []*TestFilter) ([]*TaskTestResultSample, error) {
 	if len(taskIds) == 0 {

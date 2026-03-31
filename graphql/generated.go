@@ -1086,6 +1086,7 @@ type ComplexityRoot struct {
 		SetVersionPriority            func(childComplexity int, versionID string, priority int) int
 		SpawnHost                     func(childComplexity int, spawnHostInput *SpawnHostInput) int
 		SpawnVolume                   func(childComplexity int, spawnVolumeInput SpawnVolumeInput) int
+		UnquarantineTest              func(childComplexity int, opts UnquarantineTestInput) int
 		UnscheduleTask                func(childComplexity int, taskID string) int
 		UnscheduleVersionTasks        func(childComplexity int, versionID string, abort bool) int
 		UpdateBetaFeatures            func(childComplexity int, opts UpdateBetaFeaturesInput) int
@@ -1494,6 +1495,10 @@ type ComplexityRoot struct {
 		Name func(childComplexity int) int
 	}
 
+	QuarantineStatus struct {
+		IsQuarantined func(childComplexity int) int
+	}
+
 	QuarantineTestPayload struct {
 		Success func(childComplexity int) int
 	}
@@ -1531,6 +1536,7 @@ type ComplexityRoot struct {
 		ProjectEvents            func(childComplexity int, projectIdentifier string, limit *int, before *time.Time) int
 		ProjectSettings          func(childComplexity int, projectIdentifier string) int
 		Projects                 func(childComplexity int) int
+		QuarantineStatus         func(childComplexity int, taskID string, testName string) int
 		RepoEvents               func(childComplexity int, repoID string, limit *int, before *time.Time) int
 		RepoSettings             func(childComplexity int, repoID string) int
 		SpruceConfig             func(childComplexity int) int
@@ -2246,6 +2252,10 @@ type ComplexityRoot struct {
 		UserVoice                 func(childComplexity int) int
 	}
 
+	UnquarantineTestPayload struct {
+		Success func(childComplexity int) int
+	}
+
 	UpdateBetaFeaturesPayload struct {
 		BetaFeatures func(childComplexity int) int
 	}
@@ -2577,6 +2587,7 @@ type MutationResolver interface {
 	SetTaskPriorities(ctx context.Context, taskPriorities []*TaskPriority) ([]*model.APITask, error)
 	UnscheduleTask(ctx context.Context, taskID string) (*model.APITask, error)
 	QuarantineTest(ctx context.Context, opts QuarantineTestInput) (*QuarantineTestPayload, error)
+	UnquarantineTest(ctx context.Context, opts UnquarantineTestInput) (*UnquarantineTestPayload, error)
 	AddFavoriteProject(ctx context.Context, opts AddFavoriteProjectInput) (*model.APIProjectRef, error)
 	ClearMySubscriptions(ctx context.Context) (int, error)
 	CreatePublicKey(ctx context.Context, publicKeyInput PublicKeyInput) ([]*model.APIPubKey, error)
@@ -2688,6 +2699,7 @@ type QueryResolver interface {
 	LogkeeperBuildMetadata(ctx context.Context, buildID string) (*plank.Build, error)
 	Task(ctx context.Context, taskID string, execution *int) (*model.APITask, error)
 	TaskAllExecutions(ctx context.Context, taskID string) ([]*model.APITask, error)
+	QuarantineStatus(ctx context.Context, taskID string, testName string) (*QuarantineStatus, error)
 	TaskTestSample(ctx context.Context, versionID string, taskIds []string, filters []*TestFilter) ([]*TaskTestResultSample, error)
 	CursorSettings(ctx context.Context) (*CursorSettings, error)
 	MyPublicKeys(ctx context.Context) ([]*model.APIPubKey, error)
@@ -7074,6 +7086,17 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.complexity.Mutation.SpawnVolume(childComplexity, args["spawnVolumeInput"].(SpawnVolumeInput)), true
+	case "Mutation.unquarantineTest":
+		if e.complexity.Mutation.UnquarantineTest == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_unquarantineTest_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.UnquarantineTest(childComplexity, args["opts"].(UnquarantineTestInput)), true
 	case "Mutation.unscheduleTask":
 		if e.complexity.Mutation.UnscheduleTask == nil {
 			break
@@ -8862,6 +8885,13 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.complexity.PublicKey.Name(childComplexity), true
 
+	case "QuarantineStatus.isQuarantined":
+		if e.complexity.QuarantineStatus.IsQuarantined == nil {
+			break
+		}
+
+		return e.complexity.QuarantineStatus.IsQuarantined(childComplexity), true
+
 	case "QuarantineTestPayload.success":
 		if e.complexity.QuarantineTestPayload.Success == nil {
 			break
@@ -9171,6 +9201,17 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.complexity.Query.Projects(childComplexity), true
+	case "Query.quarantineStatus":
+		if e.complexity.Query.QuarantineStatus == nil {
+			break
+		}
+
+		args, err := ec.field_Query_quarantineStatus_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.QuarantineStatus(childComplexity, args["taskId"].(string), args["testName"].(string)), true
 	case "Query.repoEvents":
 		if e.complexity.Query.RepoEvents == nil {
 			break
@@ -12230,6 +12271,13 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.complexity.UIConfig.UserVoice(childComplexity), true
 
+	case "UnquarantineTestPayload.success":
+		if e.complexity.UnquarantineTestPayload.Success == nil {
+			break
+		}
+
+		return e.complexity.UnquarantineTestPayload.Success(childComplexity), true
+
 	case "UpdateBetaFeaturesPayload.betaFeatures":
 		if e.complexity.UpdateBetaFeaturesPayload.BetaFeatures == nil {
 			break
@@ -13401,6 +13449,7 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 		ec.unmarshalInputTriggerAliasInput,
 		ec.unmarshalInputTriggerConfigInput,
 		ec.unmarshalInputUIConfigInput,
+		ec.unmarshalInputUnquarantineTestInput,
 		ec.unmarshalInputUpdateBetaFeaturesInput,
 		ec.unmarshalInputUpdateParsleySettingsInput,
 		ec.unmarshalInputUpdateSpawnHostStatusInput,
@@ -15435,6 +15484,17 @@ func (ec *executionContext) field_Mutation_spawnVolume_args(ctx context.Context,
 	return args, nil
 }
 
+func (ec *executionContext) field_Mutation_unquarantineTest_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "opts", ec.unmarshalNUnquarantineTestInput2githubᚗcomᚋevergreenᚑciᚋevergreenᚋgraphqlᚐUnquarantineTestInput)
+	if err != nil {
+		return nil, err
+	}
+	args["opts"] = arg0
+	return args, nil
+}
+
 func (ec *executionContext) field_Mutation_unscheduleTask_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
 	args := map[string]any{}
@@ -16590,6 +16650,73 @@ func (ec *executionContext) field_Query_project_argsProjectIdentifier(
 	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("projectIdentifier"))
 	directive0 := func(ctx context.Context) (any, error) {
 		tmp, ok := rawArgs["projectIdentifier"]
+		if !ok {
+			var zeroVal string
+			return zeroVal, nil
+		}
+		return ec.unmarshalNString2string(ctx, tmp)
+	}
+
+	directive1 := func(ctx context.Context) (any, error) {
+		permission, err := ec.unmarshalNProjectPermission2githubᚗcomᚋevergreenᚑciᚋevergreenᚋgraphqlᚐProjectPermission(ctx, "TASKS")
+		if err != nil {
+			var zeroVal string
+			return zeroVal, err
+		}
+		access, err := ec.unmarshalNAccessLevel2githubᚗcomᚋevergreenᚑciᚋevergreenᚋgraphqlᚐAccessLevel(ctx, "VIEW")
+		if err != nil {
+			var zeroVal string
+			return zeroVal, err
+		}
+		if ec.directives.RequireProjectAccess == nil {
+			var zeroVal string
+			return zeroVal, errors.New("directive requireProjectAccess is not implemented")
+		}
+		return ec.directives.RequireProjectAccess(ctx, rawArgs, directive0, permission, access)
+	}
+
+	tmp, err := directive1(ctx)
+	if err != nil {
+		var zeroVal string
+		return zeroVal, graphql.ErrorOnPath(ctx, err)
+	}
+	if data, ok := tmp.(string); ok {
+		return data, nil
+	} else {
+		var zeroVal string
+		return zeroVal, graphql.ErrorOnPath(ctx, fmt.Errorf(`unexpected type %T from directive, should be string`, tmp))
+	}
+}
+
+func (ec *executionContext) field_Query_quarantineStatus_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+
+	arg0, err := ec.field_Query_quarantineStatus_argsTaskID(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["taskId"] = arg0
+	arg1, err := graphql.ProcessArgField(ctx, rawArgs, "testName", ec.unmarshalNString2string)
+	if err != nil {
+		return nil, err
+	}
+	args["testName"] = arg1
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_quarantineStatus_argsTaskID(
+	ctx context.Context,
+	rawArgs map[string]any,
+) (string, error) {
+	if _, ok := rawArgs["taskId"]; !ok {
+		var zeroVal string
+		return zeroVal, nil
+	}
+
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("taskId"))
+	directive0 := func(ctx context.Context) (any, error) {
+		tmp, ok := rawArgs["taskId"]
 		if !ok {
 			var zeroVal string
 			return zeroVal, nil
@@ -40993,6 +41120,51 @@ func (ec *executionContext) fieldContext_Mutation_quarantineTest(ctx context.Con
 	return fc, nil
 }
 
+func (ec *executionContext) _Mutation_unquarantineTest(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_Mutation_unquarantineTest,
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.resolvers.Mutation().UnquarantineTest(ctx, fc.Args["opts"].(UnquarantineTestInput))
+		},
+		nil,
+		ec.marshalNUnquarantineTestPayload2ᚖgithubᚗcomᚋevergreenᚑciᚋevergreenᚋgraphqlᚐUnquarantineTestPayload,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_Mutation_unquarantineTest(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "success":
+				return ec.fieldContext_UnquarantineTestPayload_success(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type UnquarantineTestPayload", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_unquarantineTest_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Mutation_addFavoriteProject(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
@@ -51388,6 +51560,35 @@ func (ec *executionContext) fieldContext_PublicKey_name(_ context.Context, field
 	return fc, nil
 }
 
+func (ec *executionContext) _QuarantineStatus_isQuarantined(ctx context.Context, field graphql.CollectedField, obj *QuarantineStatus) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_QuarantineStatus_isQuarantined,
+		func(ctx context.Context) (any, error) {
+			return obj.IsQuarantined, nil
+		},
+		nil,
+		ec.marshalNBoolean2bool,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_QuarantineStatus_isQuarantined(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "QuarantineStatus",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _QuarantineTestPayload_success(ctx context.Context, field graphql.CollectedField, obj *QuarantineTestPayload) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
@@ -53807,6 +54008,51 @@ func (ec *executionContext) fieldContext_Query_taskAllExecutions(ctx context.Con
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Query_taskAllExecutions_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_quarantineStatus(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_Query_quarantineStatus,
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.resolvers.Query().QuarantineStatus(ctx, fc.Args["taskId"].(string), fc.Args["testName"].(string))
+		},
+		nil,
+		ec.marshalNQuarantineStatus2ᚖgithubᚗcomᚋevergreenᚑciᚋevergreenᚋgraphqlᚐQuarantineStatus,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_Query_quarantineStatus(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "isQuarantined":
+				return ec.fieldContext_QuarantineStatus_isQuarantined(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type QuarantineStatus", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_quarantineStatus_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -72038,6 +72284,35 @@ func (ec *executionContext) fieldContext_UIConfig_stagingEnvironment(_ context.C
 	return fc, nil
 }
 
+func (ec *executionContext) _UnquarantineTestPayload_success(ctx context.Context, field graphql.CollectedField, obj *UnquarantineTestPayload) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_UnquarantineTestPayload_success,
+		func(ctx context.Context) (any, error) {
+			return obj.Success, nil
+		},
+		nil,
+		ec.marshalNBoolean2bool,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_UnquarantineTestPayload_success(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "UnquarantineTestPayload",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _UpdateBetaFeaturesPayload_betaFeatures(ctx context.Context, field graphql.CollectedField, obj *UpdateBetaFeaturesPayload) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
@@ -90109,6 +90384,65 @@ func (ec *executionContext) unmarshalInputUIConfigInput(ctx context.Context, obj
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputUnquarantineTestInput(ctx context.Context, obj any) (UnquarantineTestInput, error) {
+	var it UnquarantineTestInput
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"taskId", "testName"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "taskId":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("taskId"))
+			directive0 := func(ctx context.Context) (any, error) { return ec.unmarshalNString2string(ctx, v) }
+
+			directive1 := func(ctx context.Context) (any, error) {
+				permission, err := ec.unmarshalNProjectPermission2githubᚗcomᚋevergreenᚑciᚋevergreenᚋgraphqlᚐProjectPermission(ctx, "TASKS")
+				if err != nil {
+					var zeroVal string
+					return zeroVal, err
+				}
+				access, err := ec.unmarshalNAccessLevel2githubᚗcomᚋevergreenᚑciᚋevergreenᚋgraphqlᚐAccessLevel(ctx, "EDIT")
+				if err != nil {
+					var zeroVal string
+					return zeroVal, err
+				}
+				if ec.directives.RequireProjectAccess == nil {
+					var zeroVal string
+					return zeroVal, errors.New("directive requireProjectAccess is not implemented")
+				}
+				return ec.directives.RequireProjectAccess(ctx, obj, directive0, permission, access)
+			}
+
+			tmp, err := directive1(ctx)
+			if err != nil {
+				return it, graphql.ErrorOnPath(ctx, err)
+			}
+			if data, ok := tmp.(string); ok {
+				it.TaskID = data
+			} else {
+				err := fmt.Errorf(`unexpected type %T from directive, should be string`, tmp)
+				return it, graphql.ErrorOnPath(ctx, err)
+			}
+		case "testName":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("testName"))
+			data, err := ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.TestName = data
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputUpdateBetaFeaturesInput(ctx context.Context, obj any) (UpdateBetaFeaturesInput, error) {
 	var it UpdateBetaFeaturesInput
 	asMap := map[string]any{}
@@ -98092,6 +98426,13 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
+		case "unquarantineTest":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_unquarantineTest(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
 		case "addFavoriteProject":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_addFavoriteProject(ctx, field)
@@ -101649,6 +101990,45 @@ func (ec *executionContext) _PublicKey(ctx context.Context, sel ast.SelectionSet
 	return out
 }
 
+var quarantineStatusImplementors = []string{"QuarantineStatus"}
+
+func (ec *executionContext) _QuarantineStatus(ctx context.Context, sel ast.SelectionSet, obj *QuarantineStatus) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, quarantineStatusImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("QuarantineStatus")
+		case "isQuarantined":
+			out.Values[i] = ec._QuarantineStatus_isQuarantined(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
 var quarantineTestPayloadImplementors = []string{"QuarantineTestPayload"}
 
 func (ec *executionContext) _QuarantineTestPayload(ctx context.Context, sel ast.SelectionSet, obj *QuarantineTestPayload) graphql.Marshaler {
@@ -102400,6 +102780,28 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_taskAllExecutions(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "quarantineStatus":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_quarantineStatus(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&fs.Invalids, 1)
 				}
@@ -108807,6 +109209,45 @@ func (ec *executionContext) _UIConfig(ctx context.Context, sel ast.SelectionSet,
 			out.Values[i] = ec._UIConfig_cacheTemplates(ctx, field, obj)
 		case "stagingEnvironment":
 			out.Values[i] = ec._UIConfig_stagingEnvironment(ctx, field, obj)
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var unquarantineTestPayloadImplementors = []string{"UnquarantineTestPayload"}
+
+func (ec *executionContext) _UnquarantineTestPayload(ctx context.Context, sel ast.SelectionSet, obj *UnquarantineTestPayload) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, unquarantineTestPayloadImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("UnquarantineTestPayload")
+		case "success":
+			out.Values[i] = ec._UnquarantineTestPayload_success(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -115718,6 +116159,20 @@ func (ec *executionContext) unmarshalNPublicKeyInput2ᚖgithubᚗcomᚋevergreen
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
+func (ec *executionContext) marshalNQuarantineStatus2githubᚗcomᚋevergreenᚑciᚋevergreenᚋgraphqlᚐQuarantineStatus(ctx context.Context, sel ast.SelectionSet, v QuarantineStatus) graphql.Marshaler {
+	return ec._QuarantineStatus(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNQuarantineStatus2ᚖgithubᚗcomᚋevergreenᚑciᚋevergreenᚋgraphqlᚐQuarantineStatus(ctx context.Context, sel ast.SelectionSet, v *QuarantineStatus) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._QuarantineStatus(ctx, sel, v)
+}
+
 func (ec *executionContext) unmarshalNQuarantineTestInput2githubᚗcomᚋevergreenᚑciᚋevergreenᚋgraphqlᚐQuarantineTestInput(ctx context.Context, v any) (QuarantineTestInput, error) {
 	res, err := ec.unmarshalInputQuarantineTestInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -117050,6 +117505,25 @@ func (ec *executionContext) marshalNUIConfig2ᚖgithubᚗcomᚋevergreenᚑciᚋ
 		return graphql.Null
 	}
 	return ec._UIConfig(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalNUnquarantineTestInput2githubᚗcomᚋevergreenᚑciᚋevergreenᚋgraphqlᚐUnquarantineTestInput(ctx context.Context, v any) (UnquarantineTestInput, error) {
+	res, err := ec.unmarshalInputUnquarantineTestInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNUnquarantineTestPayload2githubᚗcomᚋevergreenᚑciᚋevergreenᚋgraphqlᚐUnquarantineTestPayload(ctx context.Context, sel ast.SelectionSet, v UnquarantineTestPayload) graphql.Marshaler {
+	return ec._UnquarantineTestPayload(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNUnquarantineTestPayload2ᚖgithubᚗcomᚋevergreenᚑciᚋevergreenᚋgraphqlᚐUnquarantineTestPayload(ctx context.Context, sel ast.SelectionSet, v *UnquarantineTestPayload) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._UnquarantineTestPayload(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalNUpdateBetaFeaturesInput2githubᚗcomᚋevergreenᚑciᚋevergreenᚋgraphqlᚐUpdateBetaFeaturesInput(ctx context.Context, v any) (UpdateBetaFeaturesInput, error) {

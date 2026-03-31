@@ -1196,6 +1196,23 @@ func (r *mutationResolver) QuarantineTest(ctx context.Context, opts QuarantineTe
 	}, nil
 }
 
+// UnquarantineTest is the resolver for the unquarantineTest field.
+func (r *mutationResolver) UnquarantineTest(ctx context.Context, opts UnquarantineTestInput) (*UnquarantineTestPayload, error) {
+	t, err := task.FindOneId(ctx, opts.TaskID)
+	if err != nil {
+		return nil, InternalServerError.Send(ctx, fmt.Sprintf("fetching task '%s': %s", opts.TaskID, err.Error()))
+	}
+	if t == nil {
+		return nil, ResourceNotFound.Send(ctx, fmt.Sprintf("task '%s' not found", opts.TaskID))
+	}
+	if err = data.SetTestQuarantined(ctx, t.Project, t.BuildVariant, t.DisplayName, opts.TestName, false); err != nil {
+		return nil, InternalServerError.Send(ctx, fmt.Sprintf("unquarantining test '%s' on task '%s' on build variant '%s' on project '%s': %s", opts.TestName, opts.TaskID, t.BuildVariant, t.Project, err.Error()))
+	}
+	return &UnquarantineTestPayload{
+		Success: true,
+	}, nil
+}
+
 // AddFavoriteProject is the resolver for the addFavoriteProject field.
 func (r *mutationResolver) AddFavoriteProject(ctx context.Context, opts AddFavoriteProjectInput) (*restModel.APIProjectRef, error) {
 	p, err := model.FindBranchProjectRef(ctx, opts.ProjectIdentifier)

@@ -349,3 +349,16 @@ input QuarantineTestInput {
 type QuarantineTestPayload {
   success: Boolean!
 }
+
+input UnquarantineTestInput {
+  taskId: String! @requireProjectAccess(permission: TASKS, access: EDIT)
+  testName: String!
+}
+
+type UnquarantineTestPayload {
+  success: Boolean!
+}
+
+type QuarantineStatus {
+  isQuarantined: Boolean!
+}

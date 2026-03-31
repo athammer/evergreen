@@ -81,3 +81,43 @@ func SetTestQuarantined(ctx context.Context, projectID, bvName, taskName, testNa
 	}
 	return errors.Wrap(err, "forwarding request to test selection service")
 }
+
+// GetTestQuarantineStatus checks whether the given test is currently
+// quarantined in the test selection service by using the Explain API with the
+// ExcludeManuallyQuarantined strategy.
+func GetTestQuarantineStatus(ctx context.Context, projectID, requester, bvName, taskID, taskName, testName string) (bool, error) {
+	httpClient := utility.GetHTTPClient()
+	defer utility.PutHTTPClient(httpClient)
+	c := newTestSelectionClient(httpClient)
+
+	reqBody := testselection.BodyExplainSelectTestsApiTestSelectionExplainTestsProjectIdRequesterBuildVariantNameTaskIdTaskNamePost{
+		TestNames:  []string{testName},
+		Strategies: []testselection.StrategyEnum{testselection.EXCLUDE_MANUALLY_QUARANTINED},
+	}
+
+	result, resp, err := c.TestSelectionAPI.ExplainSelectTestsApiTestSelectionExplainTestsProjectIdRequesterBuildVariantNameTaskIdTaskNamePost(ctx, projectID, requester, bvName, taskID, taskName).
+		BodyExplainSelectTestsApiTestSelectionExplainTestsProjectIdRequesterBuildVariantNameTaskIdTaskNamePost(reqBody).
+		Execute()
+	if resp != nil {
+		defer resp.Body.Close()
+	}
+	if err != nil {
+		return false, errors.Wrap(err, "forwarding request to test selection service")
+	}
+	if result == nil {
+		return false, errors.New("empty response from test selection service")
+	}
+
+	strategyExplanations, ok := (*result)[testName]
+	if !ok {
+		return false, errors.Errorf("test '%s' not found in test selection service response", testName)
+	}
+	explanation, ok := strategyExplanations[string(testselection.EXCLUDE_MANUALLY_QUARANTINED)]
+	if !ok {
+		return false, errors.Errorf("strategy '%s' not found in test selection service response", testselection.EXCLUDE_MANUALLY_QUARANTINED)
+	}
+
+	// If the ExcludeManuallyQuarantined strategy does not select the test,
+	// it means the test is quarantined.
+	return !explanation.Selected, nil
+}

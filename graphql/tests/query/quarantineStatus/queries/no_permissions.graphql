@@ -1,0 +1,5 @@
+query {
+  quarantineStatus(taskId: "no_permissions", testName: "1234") {
+    isQuarantined
+  }
+}
