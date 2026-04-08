@@ -112,12 +112,15 @@ func GetTestQuarantineStatus(ctx context.Context, projectID, requester, bvName, 
 	if !ok {
 		return false, errors.Errorf("test '%s' not found in test selection service response", testName)
 	}
-	explanation, ok := strategyExplanations[string(testselection.EXCLUDE_MANUALLY_QUARANTINED)]
-	if !ok {
-		return false, errors.Errorf("strategy '%s' not found in test selection service response", testselection.EXCLUDE_MANUALLY_QUARANTINED)
+	// Iterate over strategy explanations and match on the Strategy field
+	// rather than the map key, since the key format from the API may differ
+	// from the Go enum string.
+	for _, explanation := range strategyExplanations {
+		if explanation.Strategy == testselection.EXCLUDE_MANUALLY_QUARANTINED {
+			// If the ExcludeManuallyQuarantined strategy does not select the test,
+			// it means the test is quarantined.
+			return !explanation.Selected, nil
+		}
 	}
-
-	// If the ExcludeManuallyQuarantined strategy does not select the test,
-	// it means the test is quarantined.
-	return !explanation.Selected, nil
+	return false, errors.Errorf("strategy '%s' not found in test selection service response", testselection.EXCLUDE_MANUALLY_QUARANTINED)
 }

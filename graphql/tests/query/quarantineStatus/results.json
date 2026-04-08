@@ -1,6 +1,21 @@
 {
   "tests": [
     {
+      "query_file": "nonexistent_task.graphql",
+      "result": {
+        "data": null,
+        "errors": [
+          {
+            "message": "finding project for task 'nonexistent_task': task not found",
+            "path": ["quarantineStatus", "taskId"],
+            "extensions": {
+              "code": "RESOURCE_NOT_FOUND"
+            }
+          }
+        ]
+      }
+    },
+    {
       "query_file": "no_permissions.graphql",
       "test_user_id": "regular_user",
       "result": {
