@@ -726,7 +726,7 @@ func (r *queryResolver) QuarantineStatus(ctx context.Context, taskID string, tes
 	if t == nil {
 		return nil, ResourceNotFound.Send(ctx, fmt.Sprintf("task '%s' not found", taskID))
 	}
-	isQuarantined, err := data.GetTestQuarantineStatus(ctx, t.Project, t.Requester, t.BuildVariant, t.Id, t.DisplayName, testName)
+	isQuarantined, err := data.GetTestQuarantineStatus(ctx, t.Project, t.Requester, t.BuildVariant, t.DisplayName, testName)
 	if err != nil {
 		return nil, InternalServerError.Send(ctx, fmt.Sprintf("checking quarantine status for test '%s': %s", testName, err.Error()))
 	}

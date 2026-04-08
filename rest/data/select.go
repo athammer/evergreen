@@ -85,7 +85,7 @@ func SetTestQuarantined(ctx context.Context, projectID, bvName, taskName, testNa
 // GetTestQuarantineStatus checks whether the given test is currently
 // quarantined in the test selection service by using the Explain API with the
 // ExcludeManuallyQuarantined strategy.
-func GetTestQuarantineStatus(ctx context.Context, projectID, requester, bvName, taskID, taskName, testName string) (bool, error) {
+func GetTestQuarantineStatus(ctx context.Context, projectID, requester, bvName, taskName, testName string) (bool, error) {
 	httpClient := utility.GetHTTPClient()
 	defer utility.PutHTTPClient(httpClient)
 	c := newTestSelectionClient(httpClient)
@@ -95,7 +95,7 @@ func GetTestQuarantineStatus(ctx context.Context, projectID, requester, bvName, 
 		Strategies: []testselection.StrategyEnum{testselection.EXCLUDE_MANUALLY_QUARANTINED},
 	}
 
-	result, resp, err := c.TestSelectionAPI.ExplainSelectTestsApiTestSelectionExplainTestsProjectIdRequesterBuildVariantNameTaskIdTaskNamePost(ctx, projectID, requester, bvName, taskID, taskName).
+	result, resp, err := c.TestSelectionAPI.ExplainSelectTestsApiTestSelectionExplainTestsProjectIdRequesterBuildVariantNameTaskIdTaskNamePost(ctx, projectID, requester, bvName, taskName, taskName).
 		BodyExplainSelectTestsApiTestSelectionExplainTestsProjectIdRequesterBuildVariantNameTaskIdTaskNamePost(reqBody).
 		Execute()
 	if resp != nil {
