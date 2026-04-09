@@ -40,19 +40,19 @@ func SelectTests(ctx context.Context, req model.SelectTestsRequest) ([]string, e
 	}
 
 	var (
-		selectedTests []string
-		resp          *http.Response
-		err           error
+		ptrTests []*string
+		resp     *http.Response
+		err      error
 	)
 	if len(req.Tests) == 0 {
-		selectedTests, resp, err = c.TestSelectionAPI.SelectAllKnownTestsOfATaskApiTestSelectionSelectKnownTestsProjectIdRequesterBuildVariantNameTaskIdTaskNamePost(ctx, req.Project, req.Requester, req.BuildVariant, req.TaskID, req.TaskName).StrategyEnum(strategies).Execute()
+		ptrTests, resp, err = c.TestSelectionAPI.SelectAllKnownTestsOfATaskApiTestSelectionSelectKnownTestsProjectIdRequesterBuildVariantNameTaskIdTaskNamePost(ctx, req.Project, req.Requester, req.BuildVariant, req.TaskID, req.TaskName).StrategyEnum(strategies).Execute()
 	} else {
 		reqBody := testselection.BodySelectTestsApiTestSelectionSelectTestsProjectIdRequesterBuildVariantNameTaskIdTaskNamePost{
 			TestNames:  req.Tests,
 			Strategies: strategies,
 		}
 
-		selectedTests, resp, err = c.TestSelectionAPI.SelectTestsApiTestSelectionSelectTestsProjectIdRequesterBuildVariantNameTaskIdTaskNamePost(ctx, req.Project, req.Requester, req.BuildVariant, req.TaskID, req.TaskName).
+		ptrTests, resp, err = c.TestSelectionAPI.SelectTestsApiTestSelectionSelectTestsProjectIdRequesterBuildVariantNameTaskIdTaskNamePost(ctx, req.Project, req.Requester, req.BuildVariant, req.TaskID, req.TaskName).
 			BodySelectTestsApiTestSelectionSelectTestsProjectIdRequesterBuildVariantNameTaskIdTaskNamePost(reqBody).
 			Execute()
 	}
@@ -61,6 +61,12 @@ func SelectTests(ctx context.Context, req model.SelectTestsRequest) ([]string, e
 	}
 	if err != nil {
 		return nil, errors.Wrap(err, "forwarding request to test selection service")
+	}
+	selectedTests := make([]string, 0, len(ptrTests))
+	for _, t := range ptrTests {
+		if t != nil {
+			selectedTests = append(selectedTests, *t)
+		}
 	}
 	return selectedTests, nil
 }
@@ -74,7 +80,7 @@ func SetTestQuarantined(ctx context.Context, projectID, bvName, taskName, testNa
 
 	_, resp, err := c.StateTransitionAPI.MarkTestsAsManuallyQuarantinedApiTestSelectionTransitionTestsProjectIdBuildVariantNameTaskNamePost(ctx, projectID, bvName, taskName).
 		IsManuallyQuarantined(isQuarantined).
-		RequestBody([]string{testName}).
+		RequestBody([]*string{&testName}).
 		Execute()
 	if resp != nil {
 		defer resp.Body.Close()
@@ -83,20 +89,14 @@ func SetTestQuarantined(ctx context.Context, projectID, bvName, taskName, testNa
 }
 
 // GetTestQuarantineStatus checks whether the given test is currently
-// quarantined in the test selection service by using the Explain API with the
-// ExcludeManuallyQuarantined strategy.
-func GetTestQuarantineStatus(ctx context.Context, projectID, requester, bvName, taskName, testName string) (bool, error) {
+// quarantined in the test selection service using the GetTestsState API.
+func GetTestQuarantineStatus(ctx context.Context, projectID, bvName, taskName, testName string) (bool, error) {
 	httpClient := utility.GetHTTPClient()
 	defer utility.PutHTTPClient(httpClient)
 	c := newTestSelectionClient(httpClient)
 
-	reqBody := testselection.BodyExplainSelectTestsApiTestSelectionExplainTestsProjectIdRequesterBuildVariantNameTaskIdTaskNamePost{
-		TestNames:  []string{testName},
-		Strategies: []testselection.StrategyEnum{testselection.EXCLUDE_MANUALLY_QUARANTINED},
-	}
-
-	result, resp, err := c.TestSelectionAPI.ExplainSelectTestsApiTestSelectionExplainTestsProjectIdRequesterBuildVariantNameTaskIdTaskNamePost(ctx, projectID, requester, bvName, taskName, taskName).
-		BodyExplainSelectTestsApiTestSelectionExplainTestsProjectIdRequesterBuildVariantNameTaskIdTaskNamePost(reqBody).
+	result, resp, err := c.StateTransitionAPI.GetTestsStateApiTestSelectionGetTestsStateProjectIdBuildVariantNameTaskNamePost(ctx, projectID, bvName, taskName).
+		RequestBody([]string{testName}).
 		Execute()
 	if resp != nil {
 		defer resp.Body.Close()
@@ -108,19 +108,9 @@ func GetTestQuarantineStatus(ctx context.Context, projectID, requester, bvName, 
 		return false, errors.New("empty response from test selection service")
 	}
 
-	strategyExplanations, ok := (*result)[testName]
+	stateInfo, ok := (*result)[testName]
 	if !ok {
 		return false, errors.Errorf("test '%s' not found in test selection service response", testName)
 	}
-	// Iterate over strategy explanations and match on the Strategy field
-	// rather than the map key, since the key format from the API may differ
-	// from the Go enum string.
-	for _, explanation := range strategyExplanations {
-		if explanation.Strategy == testselection.EXCLUDE_MANUALLY_QUARANTINED {
-			// If the ExcludeManuallyQuarantined strategy does not select the test,
-			// it means the test is quarantined.
-			return !explanation.Selected, nil
-		}
-	}
-	return false, errors.Errorf("strategy '%s' not found in test selection service response", testselection.EXCLUDE_MANUALLY_QUARANTINED)
+	return stateInfo.State == testselection.STATEMACHINEENUM_MANUALLY_QUARANTINED, nil
 }
