@@ -112,5 +112,10 @@ func GetTestQuarantineStatus(ctx context.Context, projectID, bvName, taskName, t
 	if !ok {
 		return false, errors.Errorf("test '%s' not found in test selection service response", testName)
 	}
+	// Check OverrideState first since it takes precedence over the
+	// computed State when set.
+	if overrideState, ok := stateInfo.GetOverrideStateOk(); ok && overrideState != nil {
+		return *overrideState == testselection.STATEMACHINEENUM_MANUALLY_QUARANTINED, nil
+	}
 	return stateInfo.State == testselection.STATEMACHINEENUM_MANUALLY_QUARANTINED, nil
 }
