@@ -290,6 +290,7 @@ type TestResult {
   execution: Int
   exitCode: Int
   groupID: String
+  isManuallyQuarantined: Boolean!
   logs: TestLog!
   startTime: Time
   status: String!
@@ -349,5 +350,14 @@ input QuarantineTestInput {
 }
 
 type QuarantineTestPayload {
+  success: Boolean!
+}
+
+input UnquarantineTestInput {
+  taskId: String! @requireProjectAccess(permission: TASKS, access: EDIT)
+  testName: String!
+}
+
+type UnquarantineTestPayload {
   success: Boolean!
 }
