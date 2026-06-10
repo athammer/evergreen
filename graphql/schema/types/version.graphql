@@ -79,6 +79,7 @@ type Version {
   project: String!
   projectIdentifier: String!
   projectMetadata: Project
+  quarantinedTests: QuarantinedTestsSnapshot!
   repo: String!
   requester: String!
   revision: String!
@@ -157,6 +158,28 @@ type ExternalLinkForMetadata {
 type GitTag {
   tag: String!
   pusher: String!
+}
+
+"""
+QuarantinedTestsSnapshot is a point-in-time record of tests that were quarantined in TSS at
+execution time and therefore skipped. It reflects state at the moment each task ran, not the
+current quarantine state in TSS.
+"""
+type QuarantinedTestsSnapshot {
+  sample: [QuarantinedTest!]
+}
+
+"""
+QuarantinedTest identifies a single test that was skipped because it was quarantined in TSS when
+its task executed.
+"""
+type QuarantinedTest {
+  taskId: String!
+  execution: Int!
+  buildVariant: String!
+  taskName: String!
+  testName: String!
+  displayTestName: String
 }
 
 """

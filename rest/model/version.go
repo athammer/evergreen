@@ -65,6 +65,26 @@ type APIVersion struct {
 	PredictedCost *cost.Cost `json:"predicted_cost,omitempty"`
 	// Aggregated S3 upload metrics across all tasks in the version
 	S3Usage *APIVersionS3Usage `json:"s3_usage,omitempty"`
+	// Snapshot of tests that were quarantined in TSS at execution time, and therefore skipped, across this version's tasks.
+	QuarantinedTests APIQuarantinedTestsSnapshot `json:"quarantined_tests"`
+}
+
+// APIQuarantinedTestsSnapshot is a point-in-time record of tests that were quarantined in TSS at
+// execution time and therefore skipped. It reflects state at the moment each task ran, not the
+// current quarantine state in TSS.
+type APIQuarantinedTestsSnapshot struct {
+	Sample []APIQuarantinedTest `json:"sample"`
+}
+
+// APIQuarantinedTest identifies a single test that was skipped because it was quarantined in TSS
+// when its task executed.
+type APIQuarantinedTest struct {
+	TaskID          *string `json:"task_id"`
+	Execution       int     `json:"execution"`
+	BuildVariant    *string `json:"build_variant"`
+	TaskName        *string `json:"task_name"`
+	TestName        *string `json:"test_name"`
+	DisplayTestName *string `json:"display_test_name"`
 }
 
 // APIVersionS3Usage holds aggregated S3 upload metrics for a version.
@@ -133,6 +153,17 @@ func (apiVersion *APIVersion) BuildFromService(ctx context.Context, v model.Vers
 		apiVersion.GitTags = append(apiVersion.GitTags, APIGitTag{
 			Pusher: utility.ToStringPtr(gt.Pusher),
 			Tag:    utility.ToStringPtr(gt.Tag),
+		})
+	}
+
+	for _, qt := range v.QuarantinedTests.Sample {
+		apiVersion.QuarantinedTests.Sample = append(apiVersion.QuarantinedTests.Sample, APIQuarantinedTest{
+			TaskID:          utility.ToStringPtr(qt.TaskID),
+			Execution:       qt.Execution,
+			BuildVariant:    utility.ToStringPtr(qt.BuildVariant),
+			TaskName:        utility.ToStringPtr(qt.TaskName),
+			TestName:        utility.ToStringPtr(qt.TestName),
+			DisplayTestName: utility.ToStringPtr(qt.DisplayTestName),
 		})
 	}
 

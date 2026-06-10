@@ -144,6 +144,30 @@ type Version struct {
 	PredictedCost cost.Cost `bson:"predicted_cost,omitempty" json:"predicted_cost,omitempty"`
 	// S3Usage stores the aggregated S3 usage metrics from all execution tasks in the version.
 	S3Usage s3usage.S3Usage `bson:"s3_usage,omitempty" json:"s3_usage,omitempty"`
+
+	// QuarantinedTests is a snapshot of the tests that were quarantined in TSS at
+	// execution time, and therefore skipped, across this version's tasks.
+	QuarantinedTests QuarantinedTestsSnapshot `bson:"quarantined_tests,omitempty" json:"quarantined_tests,omitempty"`
+}
+
+// QuarantinedTestsSnapshot is a point-in-time record of tests that were
+// quarantined in TSS at execution time and therefore skipped. It reflects state
+// at the moment each task ran, NOT the current quarantine state in TSS.
+type QuarantinedTestsSnapshot struct {
+	// Sample is the list of skipped-because-quarantined tests, used to link
+	// directly to them in the UI.
+	Sample []QuarantinedTest `bson:"sample,omitempty" json:"sample,omitempty"`
+}
+
+// QuarantinedTest identifies a single test that was skipped because it was
+// quarantined in TSS when its task executed.
+type QuarantinedTest struct {
+	TaskID          string `bson:"task_id" json:"task_id"`
+	Execution       int    `bson:"execution" json:"execution"`
+	BuildVariant    string `bson:"build_variant" json:"build_variant"`
+	TaskName        string `bson:"task_name" json:"task_name"`
+	TestName        string `bson:"test_name" json:"test_name"`
+	DisplayTestName string `bson:"display_test_name,omitempty" json:"display_test_name,omitempty"`
 }
 
 func (v *Version) MarshalBSON() ([]byte, error)  { return mgobson.Marshal(v) }

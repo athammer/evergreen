@@ -694,6 +694,10 @@ models:
         value: github.com/evergreen-ci/evergreen.ProviderNameStatic
   PublicKey:
     model: github.com/evergreen-ci/evergreen/rest/model.APIPubKey
+  QuarantinedTest:
+    model: github.com/evergreen-ci/evergreen/rest/model.APIQuarantinedTest
+  QuarantinedTestsSnapshot:
+    model: github.com/evergreen-ci/evergreen/rest/model.APIQuarantinedTestsSnapshot
   ReleaseModeConfig:
     model: github.com/evergreen-ci/evergreen/rest/model.APIReleaseModeConfig
   ReleaseModeConfigInput:

@@ -108,6 +108,53 @@ func TestVersionBuildFromService(t *testing.T) {
 	assert.Equal(apiVersion.TriggeredGitTag.Tag, utility.ToStringPtr("my-triggered-tag"))
 }
 
+func TestVersionBuildFromServiceQuarantinedTests(t *testing.T) {
+	t.Run("PopulatedSnapshotMapsAllFields", func(t *testing.T) {
+		v := model.Version{
+			Id: "versionId",
+			QuarantinedTests: model.QuarantinedTestsSnapshot{
+				Sample: []model.QuarantinedTest{
+					{
+						TaskID:          "task1",
+						Execution:       2,
+						BuildVariant:    "bv1",
+						TaskName:        "taskName1",
+						TestName:        "testName1",
+						DisplayTestName: "displayTestName1",
+					},
+					{
+						TaskID:       "task2",
+						Execution:    0,
+						BuildVariant: "bv2",
+						TaskName:     "taskName2",
+						TestName:     "testName2",
+					},
+				},
+			},
+		}
+
+		apiVersion := &APIVersion{}
+		apiVersion.BuildFromService(t.Context(), v)
+
+		sample := apiVersion.QuarantinedTests.Sample
+		require.Len(t, sample, 2)
+		assert.Equal(t, utility.ToStringPtr("task1"), sample[0].TaskID)
+		assert.Equal(t, 2, sample[0].Execution)
+		assert.Equal(t, utility.ToStringPtr("bv1"), sample[0].BuildVariant)
+		assert.Equal(t, utility.ToStringPtr("taskName1"), sample[0].TaskName)
+		assert.Equal(t, utility.ToStringPtr("testName1"), sample[0].TestName)
+		assert.Equal(t, utility.ToStringPtr("displayTestName1"), sample[0].DisplayTestName)
+		// DisplayTestName is optional and may be unset at capture time.
+		assert.Equal(t, utility.ToStringPtr(""), sample[1].DisplayTestName)
+	})
+
+	t.Run("EmptySnapshotProducesEmptySample", func(t *testing.T) {
+		apiVersion := &APIVersion{}
+		apiVersion.BuildFromService(t.Context(), model.Version{Id: "versionId"})
+		assert.Empty(t, apiVersion.QuarantinedTests.Sample)
+	})
+}
+
 func TestVersionBuildFromServiceCost(t *testing.T) {
 	t.Run("PopulatedCost", func(t *testing.T) {
 		v := model.Version{

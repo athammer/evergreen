@@ -1492,6 +1492,19 @@ type ComplexityRoot struct {
 		Name func(childComplexity int) int
 	}
 
+	QuarantinedTest struct {
+		BuildVariant    func(childComplexity int) int
+		DisplayTestName func(childComplexity int) int
+		Execution       func(childComplexity int) int
+		TaskID          func(childComplexity int) int
+		TaskName        func(childComplexity int) int
+		TestName        func(childComplexity int) int
+	}
+
+	QuarantinedTestsSnapshot struct {
+		Sample func(childComplexity int) int
+	}
+
 	Query struct {
 		AWSRegions               func(childComplexity int) int
 		AdminEvents              func(childComplexity int, opts AdminEventsInput) int
@@ -2331,6 +2344,7 @@ type ComplexityRoot struct {
 		Project                  func(childComplexity int) int
 		ProjectIdentifier        func(childComplexity int) int
 		ProjectMetadata          func(childComplexity int) int
+		QuarantinedTests         func(childComplexity int) int
 		Repo                     func(childComplexity int) int
 		Requester                func(childComplexity int) int
 		Revision                 func(childComplexity int) int
@@ -8898,6 +8912,50 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.complexity.PublicKey.Name(childComplexity), true
 
+	case "QuarantinedTest.buildVariant":
+		if e.complexity.QuarantinedTest.BuildVariant == nil {
+			break
+		}
+
+		return e.complexity.QuarantinedTest.BuildVariant(childComplexity), true
+	case "QuarantinedTest.displayTestName":
+		if e.complexity.QuarantinedTest.DisplayTestName == nil {
+			break
+		}
+
+		return e.complexity.QuarantinedTest.DisplayTestName(childComplexity), true
+	case "QuarantinedTest.execution":
+		if e.complexity.QuarantinedTest.Execution == nil {
+			break
+		}
+
+		return e.complexity.QuarantinedTest.Execution(childComplexity), true
+	case "QuarantinedTest.taskId":
+		if e.complexity.QuarantinedTest.TaskID == nil {
+			break
+		}
+
+		return e.complexity.QuarantinedTest.TaskID(childComplexity), true
+	case "QuarantinedTest.taskName":
+		if e.complexity.QuarantinedTest.TaskName == nil {
+			break
+		}
+
+		return e.complexity.QuarantinedTest.TaskName(childComplexity), true
+	case "QuarantinedTest.testName":
+		if e.complexity.QuarantinedTest.TestName == nil {
+			break
+		}
+
+		return e.complexity.QuarantinedTest.TestName(childComplexity), true
+
+	case "QuarantinedTestsSnapshot.sample":
+		if e.complexity.QuarantinedTestsSnapshot.Sample == nil {
+			break
+		}
+
+		return e.complexity.QuarantinedTestsSnapshot.Sample(childComplexity), true
+
 	case "Query.awsRegions":
 		if e.complexity.Query.AWSRegions == nil {
 			break
@@ -12615,6 +12673,12 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.complexity.Version.ProjectMetadata(childComplexity), true
+	case "Version.quarantinedTests":
+		if e.complexity.Version.QuarantinedTests == nil {
+			break
+		}
+
+		return e.complexity.Version.QuarantinedTests(childComplexity), true
 	case "Version.repo":
 		if e.complexity.Version.Repo == nil {
 			break
@@ -35905,6 +35969,8 @@ func (ec *executionContext) fieldContext_MainlineCommitVersion_rolledUpVersions(
 				return ec.fieldContext_Version_projectIdentifier(ctx, field)
 			case "projectMetadata":
 				return ec.fieldContext_Version_projectMetadata(ctx, field)
+			case "quarantinedTests":
+				return ec.fieldContext_Version_quarantinedTests(ctx, field)
 			case "repo":
 				return ec.fieldContext_Version_repo(ctx, field)
 			case "requester":
@@ -36022,6 +36088,8 @@ func (ec *executionContext) fieldContext_MainlineCommitVersion_version(_ context
 				return ec.fieldContext_Version_projectIdentifier(ctx, field)
 			case "projectMetadata":
 				return ec.fieldContext_Version_projectMetadata(ctx, field)
+			case "quarantinedTests":
+				return ec.fieldContext_Version_quarantinedTests(ctx, field)
 			case "repo":
 				return ec.fieldContext_Version_repo(ctx, field)
 			case "requester":
@@ -42470,6 +42538,8 @@ func (ec *executionContext) fieldContext_Mutation_restartVersions(ctx context.Co
 				return ec.fieldContext_Version_projectIdentifier(ctx, field)
 			case "projectMetadata":
 				return ec.fieldContext_Version_projectMetadata(ctx, field)
+			case "quarantinedTests":
+				return ec.fieldContext_Version_quarantinedTests(ctx, field)
 			case "repo":
 				return ec.fieldContext_Version_repo(ctx, field)
 			case "requester":
@@ -45917,6 +45987,8 @@ func (ec *executionContext) fieldContext_Patch_versionFull(_ context.Context, fi
 				return ec.fieldContext_Version_projectIdentifier(ctx, field)
 			case "projectMetadata":
 				return ec.fieldContext_Version_projectMetadata(ctx, field)
+			case "quarantinedTests":
+				return ec.fieldContext_Version_quarantinedTests(ctx, field)
 			case "repo":
 				return ec.fieldContext_Version_repo(ctx, field)
 			case "requester":
@@ -52157,6 +52229,223 @@ func (ec *executionContext) fieldContext_PublicKey_name(_ context.Context, field
 	return fc, nil
 }
 
+func (ec *executionContext) _QuarantinedTest_taskId(ctx context.Context, field graphql.CollectedField, obj *model.APIQuarantinedTest) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_QuarantinedTest_taskId,
+		func(ctx context.Context) (any, error) {
+			return obj.TaskID, nil
+		},
+		nil,
+		ec.marshalNString2ᚖstring,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_QuarantinedTest_taskId(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "QuarantinedTest",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _QuarantinedTest_execution(ctx context.Context, field graphql.CollectedField, obj *model.APIQuarantinedTest) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_QuarantinedTest_execution,
+		func(ctx context.Context) (any, error) {
+			return obj.Execution, nil
+		},
+		nil,
+		ec.marshalNInt2int,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_QuarantinedTest_execution(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "QuarantinedTest",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _QuarantinedTest_buildVariant(ctx context.Context, field graphql.CollectedField, obj *model.APIQuarantinedTest) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_QuarantinedTest_buildVariant,
+		func(ctx context.Context) (any, error) {
+			return obj.BuildVariant, nil
+		},
+		nil,
+		ec.marshalNString2ᚖstring,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_QuarantinedTest_buildVariant(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "QuarantinedTest",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _QuarantinedTest_taskName(ctx context.Context, field graphql.CollectedField, obj *model.APIQuarantinedTest) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_QuarantinedTest_taskName,
+		func(ctx context.Context) (any, error) {
+			return obj.TaskName, nil
+		},
+		nil,
+		ec.marshalNString2ᚖstring,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_QuarantinedTest_taskName(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "QuarantinedTest",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _QuarantinedTest_testName(ctx context.Context, field graphql.CollectedField, obj *model.APIQuarantinedTest) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_QuarantinedTest_testName,
+		func(ctx context.Context) (any, error) {
+			return obj.TestName, nil
+		},
+		nil,
+		ec.marshalNString2ᚖstring,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_QuarantinedTest_testName(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "QuarantinedTest",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _QuarantinedTest_displayTestName(ctx context.Context, field graphql.CollectedField, obj *model.APIQuarantinedTest) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_QuarantinedTest_displayTestName,
+		func(ctx context.Context) (any, error) {
+			return obj.DisplayTestName, nil
+		},
+		nil,
+		ec.marshalOString2ᚖstring,
+		true,
+		false,
+	)
+}
+
+func (ec *executionContext) fieldContext_QuarantinedTest_displayTestName(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "QuarantinedTest",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _QuarantinedTestsSnapshot_sample(ctx context.Context, field graphql.CollectedField, obj *model.APIQuarantinedTestsSnapshot) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_QuarantinedTestsSnapshot_sample,
+		func(ctx context.Context) (any, error) {
+			return obj.Sample, nil
+		},
+		nil,
+		ec.marshalOQuarantinedTest2ᚕgithubᚗcomᚋevergreenᚑciᚋevergreenᚋrestᚋmodelᚐAPIQuarantinedTestᚄ,
+		true,
+		false,
+	)
+}
+
+func (ec *executionContext) fieldContext_QuarantinedTestsSnapshot_sample(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "QuarantinedTestsSnapshot",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "taskId":
+				return ec.fieldContext_QuarantinedTest_taskId(ctx, field)
+			case "execution":
+				return ec.fieldContext_QuarantinedTest_execution(ctx, field)
+			case "buildVariant":
+				return ec.fieldContext_QuarantinedTest_buildVariant(ctx, field)
+			case "taskName":
+				return ec.fieldContext_QuarantinedTest_taskName(ctx, field)
+			case "testName":
+				return ec.fieldContext_QuarantinedTest_testName(ctx, field)
+			case "displayTestName":
+				return ec.fieldContext_QuarantinedTest_displayTestName(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type QuarantinedTest", field.Name)
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Query_bbGetCreatedTickets(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
@@ -55169,6 +55458,8 @@ func (ec *executionContext) fieldContext_Query_version(ctx context.Context, fiel
 				return ec.fieldContext_Version_projectIdentifier(ctx, field)
 			case "projectMetadata":
 				return ec.fieldContext_Version_projectMetadata(ctx, field)
+			case "quarantinedTests":
+				return ec.fieldContext_Version_quarantinedTests(ctx, field)
 			case "repo":
 				return ec.fieldContext_Version_repo(ctx, field)
 			case "requester":
@@ -66807,6 +67098,8 @@ func (ec *executionContext) fieldContext_Task_versionMetadata(_ context.Context,
 				return ec.fieldContext_Version_projectIdentifier(ctx, field)
 			case "projectMetadata":
 				return ec.fieldContext_Version_projectMetadata(ctx, field)
+			case "quarantinedTests":
+				return ec.fieldContext_Version_quarantinedTests(ctx, field)
 			case "repo":
 				return ec.fieldContext_Version_repo(ctx, field)
 			case "requester":
@@ -72929,6 +73222,8 @@ func (ec *executionContext) fieldContext_UpstreamProject_version(_ context.Conte
 				return ec.fieldContext_Version_projectIdentifier(ctx, field)
 			case "projectMetadata":
 				return ec.fieldContext_Version_projectMetadata(ctx, field)
+			case "quarantinedTests":
+				return ec.fieldContext_Version_quarantinedTests(ctx, field)
 			case "repo":
 				return ec.fieldContext_Version_repo(ctx, field)
 			case "requester":
@@ -74417,6 +74712,8 @@ func (ec *executionContext) fieldContext_Version_baseVersion(_ context.Context, 
 				return ec.fieldContext_Version_projectIdentifier(ctx, field)
 			case "projectMetadata":
 				return ec.fieldContext_Version_projectMetadata(ctx, field)
+			case "quarantinedTests":
+				return ec.fieldContext_Version_quarantinedTests(ctx, field)
 			case "repo":
 				return ec.fieldContext_Version_repo(ctx, field)
 			case "requester":
@@ -74661,6 +74958,8 @@ func (ec *executionContext) fieldContext_Version_childVersions(_ context.Context
 				return ec.fieldContext_Version_projectIdentifier(ctx, field)
 			case "projectMetadata":
 				return ec.fieldContext_Version_projectMetadata(ctx, field)
+			case "quarantinedTests":
+				return ec.fieldContext_Version_quarantinedTests(ctx, field)
 			case "repo":
 				return ec.fieldContext_Version_repo(ctx, field)
 			case "requester":
@@ -75404,6 +75703,8 @@ func (ec *executionContext) fieldContext_Version_previousVersion(_ context.Conte
 				return ec.fieldContext_Version_projectIdentifier(ctx, field)
 			case "projectMetadata":
 				return ec.fieldContext_Version_projectMetadata(ctx, field)
+			case "quarantinedTests":
+				return ec.fieldContext_Version_quarantinedTests(ctx, field)
 			case "repo":
 				return ec.fieldContext_Version_repo(ctx, field)
 			case "requester":
@@ -75629,6 +75930,39 @@ func (ec *executionContext) fieldContext_Version_projectMetadata(_ context.Conte
 				return ec.fieldContext_Project_workstationConfig(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Project", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Version_quarantinedTests(ctx context.Context, field graphql.CollectedField, obj *model.APIVersion) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_Version_quarantinedTests,
+		func(ctx context.Context) (any, error) {
+			return obj.QuarantinedTests, nil
+		},
+		nil,
+		ec.marshalNQuarantinedTestsSnapshot2githubᚗcomᚋevergreenᚑciᚋevergreenᚋrestᚋmodelᚐAPIQuarantinedTestsSnapshot,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_Version_quarantinedTests(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Version",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "sample":
+				return ec.fieldContext_QuarantinedTestsSnapshot_sample(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type QuarantinedTestsSnapshot", field.Name)
 		},
 	}
 	return fc, nil
@@ -77763,6 +78097,8 @@ func (ec *executionContext) fieldContext_Waterfall_flattenedVersions(_ context.C
 				return ec.fieldContext_Version_projectIdentifier(ctx, field)
 			case "projectMetadata":
 				return ec.fieldContext_Version_projectMetadata(ctx, field)
+			case "quarantinedTests":
+				return ec.fieldContext_Version_quarantinedTests(ctx, field)
 			case "repo":
 				return ec.fieldContext_Version_repo(ctx, field)
 			case "requester":
@@ -102394,6 +102730,103 @@ func (ec *executionContext) _PublicKey(ctx context.Context, sel ast.SelectionSet
 	return out
 }
 
+var quarantinedTestImplementors = []string{"QuarantinedTest"}
+
+func (ec *executionContext) _QuarantinedTest(ctx context.Context, sel ast.SelectionSet, obj *model.APIQuarantinedTest) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, quarantinedTestImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("QuarantinedTest")
+		case "taskId":
+			out.Values[i] = ec._QuarantinedTest_taskId(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "execution":
+			out.Values[i] = ec._QuarantinedTest_execution(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "buildVariant":
+			out.Values[i] = ec._QuarantinedTest_buildVariant(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "taskName":
+			out.Values[i] = ec._QuarantinedTest_taskName(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "testName":
+			out.Values[i] = ec._QuarantinedTest_testName(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "displayTestName":
+			out.Values[i] = ec._QuarantinedTest_displayTestName(ctx, field, obj)
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var quarantinedTestsSnapshotImplementors = []string{"QuarantinedTestsSnapshot"}
+
+func (ec *executionContext) _QuarantinedTestsSnapshot(ctx context.Context, sel ast.SelectionSet, obj *model.APIQuarantinedTestsSnapshot) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, quarantinedTestsSnapshotImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("QuarantinedTestsSnapshot")
+		case "sample":
+			out.Values[i] = ec._QuarantinedTestsSnapshot_sample(ctx, field, obj)
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
 var queryImplementors = []string{"Query"}
 
 func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) graphql.Marshaler {
@@ -110731,6 +111164,11 @@ func (ec *executionContext) _Version(ctx context.Context, sel ast.SelectionSet, 
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "quarantinedTests":
+			out.Values[i] = ec._Version_quarantinedTests(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
 		case "repo":
 			out.Values[i] = ec._Version_repo(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
@@ -116680,6 +117118,14 @@ func (ec *executionContext) unmarshalNQuarantineVariantInput2githubᚗcomᚋever
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
+func (ec *executionContext) marshalNQuarantinedTest2githubᚗcomᚋevergreenᚑciᚋevergreenᚋrestᚋmodelᚐAPIQuarantinedTest(ctx context.Context, sel ast.SelectionSet, v model.APIQuarantinedTest) graphql.Marshaler {
+	return ec._QuarantinedTest(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNQuarantinedTestsSnapshot2githubᚗcomᚋevergreenᚑciᚋevergreenᚋrestᚋmodelᚐAPIQuarantinedTestsSnapshot(ctx context.Context, sel ast.SelectionSet, v model.APIQuarantinedTestsSnapshot) graphql.Marshaler {
+	return ec._QuarantinedTestsSnapshot(ctx, sel, &v)
+}
+
 func (ec *executionContext) unmarshalNRefreshGitHubStatusesInput2githubᚗcomᚋevergreenᚑciᚋevergreenᚋgraphqlᚐRefreshGitHubStatusesInput(ctx context.Context, v any) (RefreshGitHubStatusesInput, error) {
 	res, err := ec.unmarshalInputRefreshGitHubStatusesInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -121407,6 +121853,53 @@ func (ec *executionContext) unmarshalOPublicKeyInput2ᚖgithubᚗcomᚋevergreen
 	}
 	res, err := ec.unmarshalInputPublicKeyInput(ctx, v)
 	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOQuarantinedTest2ᚕgithubᚗcomᚋevergreenᚑciᚋevergreenᚋrestᚋmodelᚐAPIQuarantinedTestᚄ(ctx context.Context, sel ast.SelectionSet, v []model.APIQuarantinedTest) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNQuarantinedTest2githubᚗcomᚋevergreenᚑciᚋevergreenᚋrestᚋmodelᚐAPIQuarantinedTest(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
 }
 
 func (ec *executionContext) marshalORefreshGitHubStatusesPayload2ᚖgithubᚗcomᚋevergreenᚑciᚋevergreenᚋgraphqlᚐRefreshGitHubStatusesPayload(ctx context.Context, sel ast.SelectionSet, v *RefreshGitHubStatusesPayload) graphql.Marshaler {

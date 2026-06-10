@@ -61,6 +61,9 @@ var (
 	VersionCostKey                              = bsonutil.MustHaveTag(Version{}, "Cost")
 	VersionPredictedCostKey                     = bsonutil.MustHaveTag(Version{}, "PredictedCost")
 	VersionS3UsageKey                           = bsonutil.MustHaveTag(Version{}, "S3Usage")
+	VersionQuarantinedTestsKey                  = bsonutil.MustHaveTag(Version{}, "QuarantinedTests")
+
+	QuarantinedTestsSampleKey = bsonutil.MustHaveTag(QuarantinedTestsSnapshot{}, "Sample")
 )
 
 // ById returns a db.Q object which will filter on {_id : <the id param>}
