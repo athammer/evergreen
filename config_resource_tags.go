@@ -82,10 +82,8 @@ func (c *ResourceTagsConfig) Validate() error {
 			return errors.Errorf("invalid MongoDB environment '%s'", c.MongoDBEnv)
 		}
 	}
-	if c.MongoDBOwner != "" {
-		if err := c.ValidateOwnerEmail(c.MongoDBOwner); err != nil {
-			return errors.Wrap(err, "validating MongoDB owner email")
-		}
+	if err := c.ValidateOwnerEmail(c.FallbackOwnerEmail()); err != nil {
+		return errors.Wrap(err, "validating MongoDB owner email")
 	}
 	return nil
 }

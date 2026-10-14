@@ -124,21 +124,23 @@ func TestResourceTagsConfigValidatesOwnerEmailDomains(t *testing.T) {
 		owner   string
 		valid   bool
 	}{
-		"CustomDomainShouldPass":       {domains: []string{"example.com"}, owner: "team@example.com", valid: true},
-		"ExplicitSubdomainShouldPass":  {domains: []string{"sub.mongodb.com"}, owner: "team@sub.mongodb.com", valid: true},
-		"EmptyListShouldFail":          {domains: []string{}},
-		"EmptyDomainShouldFail":        {domains: []string{""}},
-		"DuplicateDomainShouldFail":    {domains: []string{"mongodb.com", "mongodb.com"}},
-		"AtPrefixShouldFail":           {domains: []string{"@mongodb.com"}},
-		"WildcardShouldFail":           {domains: []string{"*.mongodb.com"}},
-		"UppercaseShouldFail":          {domains: []string{"MONGODB.COM"}},
-		"WhitespaceShouldFail":         {domains: []string{"mongodb.com "}},
-		"URLShouldFail":                {domains: []string{"https://mongodb.com"}},
-		"EmptyLabelShouldFail":         {domains: []string{"sub..mongodb.com"}},
-		"LeadingHyphenShouldFail":      {domains: []string{"-mongodb.com"}},
-		"TrailingHyphenShouldFail":     {domains: []string{"mongodb-.com"}},
-		"SingleLabelShouldFail":        {domains: []string{"mongodb"}},
-		"RemovedOwnerDomainShouldFail": {domains: []string{"example.com"}, owner: "team@mongodb.com"},
+		"CustomDomainShouldPass":               {domains: []string{"example.com"}, owner: "team@example.com", valid: true},
+		"ExplicitSubdomainShouldPass":          {domains: []string{"sub.mongodb.com"}, owner: "team@sub.mongodb.com", valid: true},
+		"DefaultOwnerDomainShouldPass":         {domains: []string{"mongodb.com"}, valid: true},
+		"ExcludedDefaultOwnerDomainShouldFail": {domains: []string{"example.com"}},
+		"EmptyListShouldFail":                  {domains: []string{}},
+		"EmptyDomainShouldFail":                {domains: []string{""}},
+		"DuplicateDomainShouldFail":            {domains: []string{"mongodb.com", "mongodb.com"}},
+		"AtPrefixShouldFail":                   {domains: []string{"@mongodb.com"}},
+		"WildcardShouldFail":                   {domains: []string{"*.mongodb.com"}},
+		"UppercaseShouldFail":                  {domains: []string{"MONGODB.COM"}},
+		"WhitespaceShouldFail":                 {domains: []string{"mongodb.com "}},
+		"URLShouldFail":                        {domains: []string{"https://mongodb.com"}},
+		"EmptyLabelShouldFail":                 {domains: []string{"sub..mongodb.com"}},
+		"LeadingHyphenShouldFail":              {domains: []string{"-mongodb.com"}},
+		"TrailingHyphenShouldFail":             {domains: []string{"mongodb-.com"}},
+		"SingleLabelShouldFail":                {domains: []string{"mongodb"}},
+		"RemovedOwnerDomainShouldFail":         {domains: []string{"example.com"}, owner: "team@mongodb.com"},
 	} {
 		t.Run(name, func(t *testing.T) {
 			config := ResourceTagsConfig{MongoDBOwnerEmailDomains: testCase.domains, MongoDBOwner: testCase.owner}
